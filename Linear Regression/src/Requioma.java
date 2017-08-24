@@ -10,6 +10,8 @@ public class Requioma {
 	int numRows;
 	int numCols;
 	Matrix X;
+	Matrix Y;
+	Matrix theta;
 	
 	public Requioma() throws IOException {
 		int numRows = 0;
@@ -32,6 +34,13 @@ public class Requioma {
 		System.out.println("Number of Rows: " + numRows);
 		System.out.println("Number of Columns: " + numCols);
 		X = new Matrix(numRows, numCols);
+		Y = new Matrix(numRows, 1);
+		theta = new Matrix(numCols, 1);
+		//for (int i = 0; i < numCols; i++) {
+		theta.set(0, 0, 3);
+		theta.set(1, 0, 13);
+		theta.set(2, 0, 15);
+		//}
 	}
 	
 	private void load_data() throws IOException {
@@ -51,9 +60,13 @@ public class Requioma {
 						values = line.split(",");
 					}
 					ctr++;
-					for (int i = 1; i < numCols; i++) {
+					for (int i = 1; i <= numCols; i++) {
 						int intVal = Integer.parseInt(values[i - 1]);
-						X.set(j, i, intVal);
+						if (i == numCols) {
+							Y.set(j, 0, intVal);
+						} else {
+							X.set(j, i, intVal);
+						}
 					}
 				}
 			}
@@ -71,8 +84,28 @@ public class Requioma {
 	
 	private void displayMatrix() {
 		X.print(0, 0);
+		Y.print(0, 0);
 	}
 	
+	private Matrix computeH() {
+		Matrix h = X.times(theta);
+		return h;
+	}
+	
+	private Matrix subH(Matrix h) {
+		Matrix summH = h.minus(Y);
+		return summH;
+	}
+	
+	private double computeSummation(Matrix summH) {
+		double summation = 0;
+		double cost = 0;
+		for (int i = 0; i < numRows; i++) {
+			summation = summation + (Math.pow(summH.get(i, 0), 2));
+		}
+		cost = summation / (2 * numRows);
+		return cost;
+	}
 	
 	public static void main(String[] args) {
 		Requioma r;
@@ -84,6 +117,14 @@ public class Requioma {
 			//r.displayMatrix();
 			r.load_data();
 			r.displayMatrix();
+			Matrix h = r.computeH();
+			Matrix summH = r.subH(h);
+			System.out.println("summH:");
+			System.out.println("------------------------------------");
+			summH.print(0, 0);
+			double cost = r.computeSummation(summH);
+			System.out.println("cost: " + cost);
+			h.print(0, 0);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
