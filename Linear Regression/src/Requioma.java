@@ -6,18 +6,18 @@ import java.io.IOException;
 import Jama.Matrix;
 
 public class Requioma {
-	final String IN_FILE = "HousePricingRelationship.in";
+	//final String IN_FILE = "HousePricingRelationship.in";
 	int numRows;
 	int numCols;
 	Matrix X;
 	Matrix Y;
 	Matrix theta;
 	
-	public Requioma() throws IOException {
+	public Requioma(String filename) throws IOException {
 		int numRows = 0;
 		int numCols = 0;
 		String line;
-		BufferedReader in = new BufferedReader(new FileReader(IN_FILE));
+		BufferedReader in = new BufferedReader(new FileReader(filename));
 		try {
 			while ((line = in.readLine()) != null) {
 				numRows++;
@@ -43,14 +43,14 @@ public class Requioma {
 		//}
 	}
 	
-	private void load_data() throws IOException {
+	private void load_data(String filename) throws IOException {
 		String line;
 		int ctr = 0;
 		for (int i = 0; i < numRows; i++) {
 			X.set(i, 0, 1);
 		}
 		
-		BufferedReader in = new BufferedReader(new FileReader(IN_FILE));
+		BufferedReader in = new BufferedReader(new FileReader(filename));
 		try {
 			while ((line = in.readLine()) != null) {
 				String[] values = line.split(",");
@@ -92,6 +92,12 @@ public class Requioma {
 		return h;
 	}
 	
+	private double cost(Matrix X, Matrix y, Matrix theta) {
+		Matrix h = X.times(theta);
+		Matrix summH = h.minus(y);
+		double cost = computeSummation(summH);
+		return cost;
+	}
 	private Matrix subH(Matrix h) {
 		Matrix summH = h.minus(Y);
 		return summH;
@@ -110,12 +116,12 @@ public class Requioma {
 	public static void main(String[] args) {
 		Requioma r;
 		try {
-			r = new Requioma();
+			r = new Requioma("HousePricingRelationship.in");
 			
 			System.out.println("Number of r Rows: " + r.numRows);
 			System.out.println("Number of r Columns: " + r.numCols);
 			//r.displayMatrix();
-			r.load_data();
+			r.load_data("HousePricingRelationship.in");
 			r.displayMatrix();
 			Matrix h = r.computeH();
 			Matrix summH = r.subH(h);
@@ -123,7 +129,9 @@ public class Requioma {
 			System.out.println("------------------------------------");
 			summH.print(0, 0);
 			double cost = r.computeSummation(summH);
+			double cost2 = r.cost(r.X, r.Y, r.theta);
 			System.out.println("cost: " + cost);
+			System.out.println("cost2: " + cost2);
 			h.print(0, 0);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
