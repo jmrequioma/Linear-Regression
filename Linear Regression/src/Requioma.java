@@ -37,9 +37,9 @@ public class Requioma {
 		Y = new Matrix(numRows, 1);
 		theta = new Matrix(numCols, 1);
 		//for (int i = 0; i < numCols; i++) {
-		theta.set(0, 0, 3);
-		theta.set(1, 0, 13);
-		theta.set(2, 0, 15);
+		theta.set(0, 0, 100);
+		theta.set(1, 0, 231);
+		theta.set(2, 0, 698);
 		//}
 	}
 	
