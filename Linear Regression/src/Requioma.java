@@ -31,8 +31,8 @@ public class Requioma {
 		}
 		this.numRows = numRows;
 		this.numCols = numCols;
-		System.out.println("Number of Rows: " + numRows);
-		System.out.println("Number of Columns: " + numCols);
+		//System.out.println("Number of Rows: " + numRows);
+		//System.out.println("Number of Columns: " + numCols);
 		X = new Matrix(numRows, numCols);
 		Y = new Matrix(numRows, 1);
 		theta = new Matrix(numCols, 1);
@@ -118,21 +118,21 @@ public class Requioma {
 		try {
 			r = new Requioma("HousePricingRelationship.in");
 			
-			System.out.println("Number of r Rows: " + r.numRows);
-			System.out.println("Number of r Columns: " + r.numCols);
+			//System.out.println("Number of r Rows: " + r.numRows);
+			//System.out.println("Number of r Columns: " + r.numCols);
 			//r.displayMatrix();
 			r.load_data("HousePricingRelationship.in");
 			r.displayMatrix();
 			Matrix h = r.computeH();
 			Matrix summH = r.subH(h);
-			System.out.println("summH:");
-			System.out.println("------------------------------------");
-			summH.print(0, 0);
+			//System.out.println("summH:");
+			//System.out.println("------------------------------------");
+			//summH.print(0, 0);
 			double cost = r.computeSummation(summH);
 			double cost2 = r.cost(r.X, r.Y, r.theta);
-			System.out.println("cost: " + cost);
-			System.out.println("cost2: " + cost2);
-			h.print(0, 0);
+			//System.out.println("cost: " + cost);
+			System.out.println("cost: " + cost2);
+			//h.print(0, 0);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
