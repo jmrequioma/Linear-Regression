@@ -113,6 +113,37 @@ public class Requioma {
 		return cost;
 	}
 	
+	private double computeSummationModified(Matrix summH, int colNo, int alpha) {
+		double summation = 0;
+		double cost = 0;
+		for (int i = 0; i < numRows; i++) {
+			summation = summation + (summH.get(i, 0) * X.get(i, colNo));
+		}
+		cost = (summation * alpha) / numRows;
+		return cost;
+	}
+	
+	private void iter() {
+		for (int i = 0; i < 4; i++) {
+			test();
+		}
+	}
+	
+	private Matrix test() {
+		Matrix h = X.times(theta);
+		Matrix summH = h.minus(Y);
+		Matrix copyOfTheta = theta.copy();
+		copyOfTheta.print(0, 0);
+		double newValue = 0;
+		for (int i = 0; i < copyOfTheta.getRowDimension(); i++) {
+			newValue = copyOfTheta.get(i, 0) - (computeSummationModified(summH, i, 6));
+			copyOfTheta.set(i, 0, newValue);
+			theta.set(i, 0, newValue);
+		}
+		copyOfTheta.print(0, 0);
+		return copyOfTheta;
+	}
+	
 	public static void main(String[] args) {
 		Requioma r;
 		try {
@@ -130,6 +161,16 @@ public class Requioma {
 			//summH.print(0, 0);
 			double cost = r.computeSummation(summH);
 			double cost2 = r.cost(r.X, r.Y, r.theta);
+			System.out.println("r.theta:");
+			System.out.println("------------------------------------");
+			r.theta.print(0, 0);
+			System.out.println("copy of theta:");
+			Matrix copy = r.test();
+			copy.print(0, 0);
+			r.iter();
+			System.out.println("theta after iter:");
+			System.out.println("------------------------------------");
+			r.theta.print(0, 0);
 			//System.out.println("cost: " + cost);
 			System.out.println("cost: " + cost2);
 			//h.print(0, 0);
