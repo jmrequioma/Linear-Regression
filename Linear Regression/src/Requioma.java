@@ -37,9 +37,9 @@ public class Requioma {
 		Y = new Matrix(numRows, 1);
 		theta = new Matrix(numCols, 1);
 		//for (int i = 0; i < numCols; i++) {
-		theta.set(0, 0, 100);
-		theta.set(1, 0, 231);
-		theta.set(2, 0, 698);
+		theta.set(0, 0, 0);
+		theta.set(1, 0, 0);
+		theta.set(2, 0, 0);
 		//}
 	}
 	
@@ -143,6 +143,12 @@ public class Requioma {
 					newValue = theta.get(j, 0) - (computeSummationModified(summH, j, 0.00000001));
 					System.out.println("newValue: " + newValue);
 					iterMatrix.set(0, j, newValue);
+				} else {
+					Matrix h = X.times(iterMatrix.getMatrix(i - 1, i - 1, 0, numCols - 1).transpose());
+					Matrix summH = h.minus(Y);
+					newValue = iterMatrix.get(i - 1, j) - (computeSummationModified(summH, j, 0.00000001));
+					System.out.println("newValue: " + newValue);
+					iterMatrix.set(i, j, newValue);
 				}
 			}
 		}
@@ -188,9 +194,9 @@ public class Requioma {
 			r.displayMatrix();
 			Matrix h = r.computeH();
 			Matrix summH = r.subH(h);
-			//System.out.println("summH:");
-			//System.out.println("------------------------------------");
-			//summH.print(0, 0);
+			System.out.println("summH:");
+			System.out.println("------------------------------------");
+			summH.print(0, 0);
 			double cost = r.computeSummation(summH);
 			double cost2 = r.cost(r.X, r.Y, r.theta);
 			r.gradientDescent(r.X, r.Y, 0.00000001, 100);
