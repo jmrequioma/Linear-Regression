@@ -113,7 +113,7 @@ public class Requioma {
 		return cost;
 	}
 	
-	private double computeSummationModified(Matrix summH, int colNo, int alpha) {
+	private double computeSummationModified(Matrix summH, int colNo, double alpha) {
 		double summation = 0;
 		double cost = 0;
 		for (int i = 0; i < numRows; i++) {
@@ -124,24 +124,56 @@ public class Requioma {
 	}
 	
 	private void iter() {
+		Matrix thetaHist = new Matrix(theta.getRowDimension(), theta.getRowDimension());
+		Matrix holder;
 		for (int i = 0; i < 4; i++) {
-			test();
+			holder = test(thetaHist);
+			thetaHist = holder;
 		}
 	}
 	
-	private Matrix test() {
-		Matrix h = X.times(theta);
-		Matrix summH = h.minus(Y);
-		Matrix copyOfTheta = theta.copy();
-		copyOfTheta.print(0, 0);
+	private void gradientDescent(Matrix X,Matrix y, double alpha,int iters) {
+		Matrix iterMatrix = new Matrix(iters, numCols);
 		double newValue = 0;
-		for (int i = 0; i < copyOfTheta.getRowDimension(); i++) {
-			newValue = copyOfTheta.get(i, 0) - (computeSummationModified(summH, i, 6));
-			copyOfTheta.set(i, 0, newValue);
-			theta.set(i, 0, newValue);
+		for (int i = 0; i < iters; i++) {
+			for (int j = 0; j < numCols; j++) {
+				if (i == 0) {
+					Matrix h = X.times(theta);
+					Matrix summH = h.minus(Y);
+					newValue = theta.get(j, 0) - (computeSummationModified(summH, j, 0.00000001));
+					System.out.println("newValue: " + newValue);
+					iterMatrix.set(0, j, newValue);
+				}
+			}
 		}
+		iterMatrix.print(0, 0);
+		
+	}
+	
+	private Matrix test(Matrix thetaHist) {
+		Matrix copyOfTheta = theta.copy();
+		//Matrix thetaHist = new Matrix(theta.getRowDimension(), theta.getRowDimension());
+		double newValue = 0;
+		for (int j = 0; j < thetaHist.getColumnDimension(); j++) {
+			Matrix h = X.times(copyOfTheta);
+			Matrix summH = h.minus(Y);
+			for (int i = 0; i < thetaHist.getRowDimension(); i++) {
+				if (j == 0) {
+					newValue = theta.get(i, 0) - (computeSummationModified(summH, j, 0.00000001));
+					copyOfTheta.set(i, 0, newValue);
+					thetaHist.set(i, j, newValue);
+					
+				} else {
+					newValue = thetaHist.get(i, j - 1) - (computeSummationModified(summH, j, 0.00000001));
+					copyOfTheta.set(i, 0, newValue);
+					thetaHist.set(i, j, newValue);
+				}
+			}
+		}
+		System.out.println("theta hist:");
+		thetaHist.print(0, 0);
 		copyOfTheta.print(0, 0);
-		return copyOfTheta;
+		return thetaHist;
 	}
 	
 	public static void main(String[] args) {
@@ -161,19 +193,8 @@ public class Requioma {
 			//summH.print(0, 0);
 			double cost = r.computeSummation(summH);
 			double cost2 = r.cost(r.X, r.Y, r.theta);
-			System.out.println("r.theta:");
-			System.out.println("------------------------------------");
-			r.theta.print(0, 0);
-			System.out.println("copy of theta:");
-			Matrix copy = r.test();
-			copy.print(0, 0);
-			r.iter();
-			System.out.println("theta after iter:");
-			System.out.println("------------------------------------");
-			r.theta.print(0, 0);
-			//System.out.println("cost: " + cost);
+			r.gradientDescent(r.X, r.Y, 0.00000001, 100);
 			System.out.println("cost: " + cost2);
-			//h.print(0, 0);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
