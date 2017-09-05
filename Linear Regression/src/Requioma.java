@@ -3,18 +3,28 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.ui.ApplicationFrame;
+import org.jfree.ui.RefineryUtilities;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.DefaultCategoryDataset;
 
 import Jama.Matrix;
 
-public class Requioma {
+public class Requioma extends ApplicationFrame {
 	//final String IN_FILE = "HousePricingRelationship.in";
 	int numRows;
 	int numCols;
 	Matrix X;
 	Matrix Y;
 	Matrix theta;
+	double alpha;
+	int iters;
 	
-	public Requioma(String filename) throws IOException {
+	public Requioma(String filename, String applicationTitle , String chartTitle, double alpha, int iters) throws IOException {
+		super(applicationTitle);
 		int numRows = 0;
 		int numCols = 0;
 		String line;
@@ -32,6 +42,8 @@ public class Requioma {
 		}
 		this.numRows = numRows;
 		this.numCols = numCols;
+		this.alpha = alpha;
+		this.iters = iters;
 		//System.out.println("Number of Rows: " + numRows);
 		//System.out.println("Number of Columns: " + numCols);
 		X = new Matrix(numRows, numCols);
@@ -41,9 +53,31 @@ public class Requioma {
 		theta.set(0, 0, 0);
 		theta.set(1, 0, 0);
 		theta.set(2, 0, 0);
+		JFreeChart lineChart = ChartFactory.createLineChart(
+		         chartTitle,
+		         "Iterations","Cost",
+		         createDataset(),
+		         PlotOrientation.VERTICAL,
+		         true,true,false);
+		      ChartPanel chartPanel = new ChartPanel( lineChart );
+		      chartPanel.setPreferredSize( new java.awt.Dimension( 1000 , 600 ) );
+		      setContentPane( chartPanel );
 		//}
 	}
 	
+	private DefaultCategoryDataset createDataset() throws IOException {
+		load_data("HousePricingRelationship.in");
+		System.out.println("hi");
+		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+		ArrayList<Double> costHist = gradientDescent(X, Y, alpha, iters);
+		for (int i = 0; i < iters; i++) {
+			dataset.addValue((Number) costHist.get(i) , "cost" , Integer.toString(i));
+			System.out.println(costHist.get(i));
+			System.out.println("hello");
+		}
+		return dataset;
+   }
+	 
 	private void load_data(String filename) throws IOException {
 		String line;
 		int ctr = 0;
@@ -76,11 +110,6 @@ public class Requioma {
 		} finally {
 			in.close();
 		}
-	}
-	
-	private Matrix makeX(int numRows, int numCols) {
-		Matrix X = new Matrix(numRows, numCols);
-		return X;
 	}
 	
 	private void displayMatrix() {
@@ -125,16 +154,7 @@ public class Requioma {
 		return cost;
 	}
 	
-	private void iter() {
-		Matrix thetaHist = new Matrix(theta.getRowDimension(), theta.getRowDimension());
-		Matrix holder;
-		for (int i = 0; i < 4; i++) {
-			holder = test(thetaHist);
-			thetaHist = holder;
-		}
-	}
-	
-	private void gradientDescent(Matrix X,Matrix y, double alpha,int iters) {
+	private ArrayList<Double> gradientDescent(Matrix X,Matrix y, double alpha,int iters) {
 		Matrix iterMatrix = new Matrix(iters, numCols);
 		ArrayList<Double> costHist = new ArrayList<Double>();
 		double cost = 0;
@@ -144,13 +164,12 @@ public class Requioma {
 				if (i == 0) {
 					Matrix h = X.times(theta);
 					Matrix summH = h.minus(Y);
-					newValue = theta.get(j, 0) - (computeSummationModified(summH, j, 0.00000001));
-					//System.out.println("newValue: " + newValue);
+					newValue = theta.get(j, 0) - (computeSummationModified(summH, j, alpha));
 					iterMatrix.set(0, j, newValue);
 				} else {
 					Matrix h = X.times(iterMatrix.getMatrix(i - 1, i - 1, 0, numCols - 1).transpose());
 					Matrix summH = h.minus(Y);
-					newValue = iterMatrix.get(i - 1, j) - (computeSummationModified(summH, j, 0.00000001));
+					newValue = iterMatrix.get(i - 1, j) - (computeSummationModified(summH, j, alpha));
 					//System.out.println("newValue: " + newValue);
 					iterMatrix.set(i, j, newValue);
 				}
@@ -160,42 +179,17 @@ public class Requioma {
 				costHist.add(cost);
 			}
 		}
-		iterMatrix.print(0, 0);
+		//iterMatrix.print(0, 0);
 		for (int i = 0; i < costHist.size(); i++) {
 			System.out.println("costHist at index "+ i + " " + costHist.get(i));
 		}
-	}
-	
-	private Matrix test(Matrix thetaHist) {
-		Matrix copyOfTheta = theta.copy();
-		//Matrix thetaHist = new Matrix(theta.getRowDimension(), theta.getRowDimension());
-		double newValue = 0;
-		for (int j = 0; j < thetaHist.getColumnDimension(); j++) {
-			Matrix h = X.times(copyOfTheta);
-			Matrix summH = h.minus(Y);
-			for (int i = 0; i < thetaHist.getRowDimension(); i++) {
-				if (j == 0) {
-					newValue = theta.get(i, 0) - (computeSummationModified(summH, j, 0.00000001));
-					copyOfTheta.set(i, 0, newValue);
-					thetaHist.set(i, j, newValue);
-					
-				} else {
-					newValue = thetaHist.get(i, j - 1) - (computeSummationModified(summH, j, 0.00000001));
-					copyOfTheta.set(i, 0, newValue);
-					thetaHist.set(i, j, newValue);
-				}
-			}
-		}
-		System.out.println("theta hist:");
-		thetaHist.print(0, 0);
-		copyOfTheta.print(0, 0);
-		return thetaHist;
+		return costHist;
 	}
 	
 	public static void main(String[] args) {
 		Requioma r;
 		try {
-			r = new Requioma("HousePricingRelationship.in");
+			r = new Requioma("HousePricingRelationship.in", "Iterations Vs Cost", "Iterations Vs Cost", 0.00000001, 100);
 			
 			//System.out.println("Number of r Rows: " + r.numRows);
 			//System.out.println("Number of r Columns: " + r.numCols);
@@ -211,6 +205,9 @@ public class Requioma {
 			double cost2 = r.cost(r.X, r.Y, r.theta);
 			r.gradientDescent(r.X, r.Y, 0.00000001, 100);
 			System.out.println("cost: " + cost2);
+			r.pack();
+			RefineryUtilities.centerFrameOnScreen(r);
+			r.setVisible(true);
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
