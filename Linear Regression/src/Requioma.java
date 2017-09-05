@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import Jama.Matrix;
 
@@ -118,6 +119,7 @@ public class Requioma {
 		double cost = 0;
 		for (int i = 0; i < numRows; i++) {
 			summation = summation + (summH.get(i, 0) * X.get(i, colNo));
+			//System.out.println("last value:" + X.get(i, colNo));
 		}
 		cost = (summation * alpha) / numRows;
 		return cost;
@@ -134,6 +136,8 @@ public class Requioma {
 	
 	private void gradientDescent(Matrix X,Matrix y, double alpha,int iters) {
 		Matrix iterMatrix = new Matrix(iters, numCols);
+		ArrayList<Double> costHist = new ArrayList<Double>();
+		double cost = 0;
 		double newValue = 0;
 		for (int i = 0; i < iters; i++) {
 			for (int j = 0; j < numCols; j++) {
@@ -141,19 +145,25 @@ public class Requioma {
 					Matrix h = X.times(theta);
 					Matrix summH = h.minus(Y);
 					newValue = theta.get(j, 0) - (computeSummationModified(summH, j, 0.00000001));
-					System.out.println("newValue: " + newValue);
+					//System.out.println("newValue: " + newValue);
 					iterMatrix.set(0, j, newValue);
 				} else {
 					Matrix h = X.times(iterMatrix.getMatrix(i - 1, i - 1, 0, numCols - 1).transpose());
 					Matrix summH = h.minus(Y);
 					newValue = iterMatrix.get(i - 1, j) - (computeSummationModified(summH, j, 0.00000001));
-					System.out.println("newValue: " + newValue);
+					//System.out.println("newValue: " + newValue);
 					iterMatrix.set(i, j, newValue);
 				}
+				Matrix hPerRow = X.times(iterMatrix.getMatrix(i, i, 0, numCols - 1).transpose());
+				Matrix xSubtrY = hPerRow.minus(Y);
+				cost = computeSummation(xSubtrY);
+				costHist.add(cost);
 			}
 		}
 		iterMatrix.print(0, 0);
-		
+		for (int i = 0; i < costHist.size(); i++) {
+			System.out.println("costHist at index "+ i + " " + costHist.get(i));
+		}
 	}
 	
 	private Matrix test(Matrix thetaHist) {
@@ -191,12 +201,12 @@ public class Requioma {
 			//System.out.println("Number of r Columns: " + r.numCols);
 			//r.displayMatrix();
 			r.load_data("HousePricingRelationship.in");
-			r.displayMatrix();
+			//r.displayMatrix();
 			Matrix h = r.computeH();
 			Matrix summH = r.subH(h);
-			System.out.println("summH:");
-			System.out.println("------------------------------------");
-			summH.print(0, 0);
+			//System.out.println("summH:");
+			//System.out.println("------------------------------------");
+			//summH.print(0, 0);
 			double cost = r.computeSummation(summH);
 			double cost2 = r.cost(r.X, r.Y, r.theta);
 			r.gradientDescent(r.X, r.Y, 0.00000001, 100);
