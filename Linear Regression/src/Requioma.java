@@ -166,7 +166,7 @@ public class Requioma extends ApplicationFrame {
 					Matrix h = X.times(theta);
 					Matrix summH = h.minus(Y);
 					newValue = theta.get(j, 0) - (computeSummationModified(summH, j, alpha));
-					iterMatrix.set(0, j, newValue);
+					iterMatrix.set(0, j, theta.get(j, 0));
 				} else {
 					Matrix h = X.times(iterMatrix.getMatrix(i - 1, i - 1, 0, numCols - 1).transpose());
 					Matrix summH = h.minus(Y);
