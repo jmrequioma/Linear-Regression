@@ -53,10 +53,12 @@ public class Requioma extends ApplicationFrame {
 		theta.set(0, 0, 0);
 		theta.set(1, 0, 0);
 		theta.set(2, 0, 0);
+		load_data(filename);
+		ArrayList<Double> costHist = gradientDescent(X, Y, alpha, iters);
 		JFreeChart lineChart = ChartFactory.createLineChart(
 		         chartTitle,
-		         "Iterations","Cost",
-		         createDataset(),
+		         "Number of Iterations","Cost",
+		         graph(costHist),
 		         PlotOrientation.VERTICAL,
 		         true,true,false);
 		      ChartPanel chartPanel = new ChartPanel( lineChart );
@@ -65,11 +67,10 @@ public class Requioma extends ApplicationFrame {
 		//}
 	}
 	
-	private DefaultCategoryDataset createDataset() throws IOException {
-		load_data("HousePricingRelationship.in");
+	private DefaultCategoryDataset graph(ArrayList<Double> costHist) throws IOException {
+		//load_data("HousePricingRelationship.in");
 		System.out.println("hi");
 		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-		ArrayList<Double> costHist = gradientDescent(X, Y, alpha, iters);
 		for (int i = 0; i < iters; i++) {
 			dataset.addValue((Number) costHist.get(i) , "cost" , Integer.toString(i));
 			System.out.println(costHist.get(i));
@@ -173,11 +174,9 @@ public class Requioma extends ApplicationFrame {
 					//System.out.println("newValue: " + newValue);
 					iterMatrix.set(i, j, newValue);
 				}
-				Matrix hPerRow = X.times(iterMatrix.getMatrix(i, i, 0, numCols - 1).transpose());
-				Matrix xSubtrY = hPerRow.minus(Y);
-				cost = computeSummation(xSubtrY);
-				costHist.add(cost);
 			}
+			cost = cost(X, Y, iterMatrix.getMatrix(i, i, 0, numCols - 1).transpose());
+			costHist.add(cost);
 		}
 		//iterMatrix.print(0, 0);
 		for (int i = 0; i < costHist.size(); i++) {
@@ -189,7 +188,7 @@ public class Requioma extends ApplicationFrame {
 	public static void main(String[] args) {
 		Requioma r;
 		try {
-			r = new Requioma("HousePricingRelationship.in", "Iterations Vs Cost", "Iterations Vs Cost", 0.00000001, 100);
+			r = new Requioma("HousePricingRelationship.in", "Number of Iterations Vs Cost", "Number of Iterations Vs Cost", 0.00000001, 100);
 			
 			//System.out.println("Number of r Rows: " + r.numRows);
 			//System.out.println("Number of r Columns: " + r.numCols);
