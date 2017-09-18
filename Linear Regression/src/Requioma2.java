@@ -59,12 +59,56 @@ public class Requioma2 {
 		return X;
 	}
 	
+	private Matrix scalefeatures(Matrix X) {
+		Matrix scaledX = new Matrix(X.getRowDimension(), X.getColumnDimension());
+		double scaledVal = 0;
+		for (int i = 0; i < scaledX.getRowDimension(); i++) {
+			for (int j = 0; j < scaledX.getColumnDimension(); j++) {
+				if (j == 0) {
+					scaledX.set(i, j, 1);
+				} else {
+					scaledVal = (X.get(i, j) - mean(X, j)) / standardDev(X, j);
+					scaledX.set(i, j, scaledVal);
+				}
+			}
+		}
+		return scaledX;
+	}
+	
+	private double mean(Matrix X, int colNum) {
+		double mean = 0;
+		for (int i = 0; i < X.getRowDimension(); i++) {
+			mean += X.get(i, colNum);
+		}
+		mean = mean / X.getRowDimension();
+		return mean;
+	}
+	
+	private double standardDev(Matrix X, int colNum) {
+		double sd = 0;
+		double currSubMean;
+		for (int i = 0; i < X.getRowDimension(); i++) {
+			currSubMean = X.get(i, colNum) - mean(X, colNum);
+			sd = sd + (Math.pow(currSubMean, 2));
+		}
+		sd = sd / X.getRowDimension();
+		sd = Math.sqrt(sd);
+		return sd;
+	}
+	
 	public static void main(String[] args) {
 		String inputFile = "irisflowers.csv";
 		Requioma2 r = new Requioma2();
 		try {
 			Matrix X = r.load(inputFile);
-			X.print(0, 0);
+			double mean = r.mean(X, 1);
+			double sd = r.standardDev(X, 1);
+			X.print(1, 1);
+			System.out.println("mean: " + mean);
+			System.out.println("sd: " + sd);
+			Matrix scaledX = r.scalefeatures(X);
+			scaledX.print(1, 1);
+			//System.out.println(X.get(0, 2));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
