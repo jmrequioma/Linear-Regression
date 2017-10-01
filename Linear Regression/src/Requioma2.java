@@ -1,10 +1,13 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import Jama.Matrix;
 
 public class Requioma2 {
+	int numRows;
+	int numCols;
 	private Matrix load(String filename) throws IOException {
 		int numRows = 0;
 		int numCols = 0;
@@ -56,7 +59,55 @@ public class Requioma2 {
 		} finally {
 			in2.close();
 		}
+		this.numRows = numRows;
+		this.numCols = numCols;
 		return X;
+	}
+	
+	private Matrix loadY(String filename) throws IOException {
+		String line;
+		String line2;
+		int ctr = 0;
+		ArrayList<String> classList = new ArrayList<String>();
+		BufferedReader in = new BufferedReader(new FileReader(filename));
+		line = in.readLine();
+		try {
+			while ((line = in.readLine()) != null) {
+				String[] values = line.split(",");
+				if (classList.size() == 0) {
+					classList.add(values[numCols - 1]);
+				} else {
+					if (!classList.contains(values[numCols - 1])) {
+						classList.add(values[numCols - 1]);
+					}
+				}
+			}
+		} catch(NullPointerException npe) {
+			//
+		} finally {
+			in.close();
+		}
+		Matrix Y = new Matrix(numRows, classList.size());
+		BufferedReader in2 = new BufferedReader(new FileReader(filename));
+		line2 = in2.readLine();
+		try {
+			while ((line2 = in2.readLine()) != null) {
+				String[] values = line2.split(",");
+				int index = classList.indexOf(values[numCols - 1]);
+				Y.set(ctr, index, 1);
+				ctr++;
+			}
+		} catch(NullPointerException npe) {
+			//
+		} finally {
+			in2.close();
+		}
+		/*
+		for (int i = 0; i < classList.size(); i++) {
+			System.out.println(classList.get(i));
+		}
+		*/
+		return Y;
 	}
 	
 	private Matrix scalefeatures(Matrix X) {
@@ -108,6 +159,8 @@ public class Requioma2 {
 			System.out.println("sd: " + sd);
 			Matrix scaledX = r.scalefeatures(X);
 			scaledX.print(1, 1);
+			Matrix Y = r.loadY(inputFile);
+			Y.print(1, 1);
 			//System.out.println(X.get(0, 2));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
