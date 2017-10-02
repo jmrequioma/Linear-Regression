@@ -211,7 +211,7 @@ public class Requioma2 {
 			System.out.println("sd: " + sd);
 			Matrix scaledX = r.scalefeatures(X);
 			Matrix polyX = r.engineerPolynomials(scaledX, 1);
-			polyX.print(1, 1);
+			polyX.print(8, 8);
 			//scaledX.print(1, 1);
 			Matrix Y = r.loadY(inputFile);
 			Matrix degreeMatrix = r.degreeMatrix(1);
