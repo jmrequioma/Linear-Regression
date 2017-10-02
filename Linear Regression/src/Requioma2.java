@@ -151,22 +151,52 @@ public class Requioma2 {
 	
 	private Matrix degreeMatrix(int degree) {
 		int ctr = 1;
+		int ctr2 = 1;
 		int base = degree + 1;
+		int inc = 0;
 		Matrix dMatrix = new Matrix((int) Math.pow(base, numFeatures), numFeatures);
-		for (int j = numFeatures; j > 0; j--) {
+		for (int j = numFeatures - 1; j >= 0; j--) {
 			for (int i = 0; i < (int) Math.pow(base, numFeatures); i++) {
-				//while (true) {
-					int inc = 0;
-					dMatrix.set(i, j, inc);
-					inc++;
-					if (inc == ctr) {
+				System.out.println("ctr: " + ctr);
+				dMatrix.set(i, j, inc);
+				if (ctr2 == ctr) {
+					if (inc == degree) {
 						inc = 0;
+					} else {
+						inc++;
 					}
-				//}
+					ctr2 = 0;
+				}
+				ctr2++;
 			}
 			ctr = ctr * (degree + 1);
 		}
 		return dMatrix;
+	}
+	
+	private ArrayList<Double> degContainer(Matrix degMatrix, int rowSeq) {
+		ArrayList<Double> valHolder = new ArrayList<Double>();
+		for (int i = 0; i < numFeatures - 1; i++) {
+			valHolder.add(degMatrix.get(rowSeq, i));
+		}
+		return valHolder;
+	}
+	
+	private Matrix engineerPolynomials(Matrix X,int degree) {
+		double value = 1;
+		Matrix degreeMatrix = degreeMatrix(degree);
+		Matrix polyX = new Matrix(X.getRowDimension(), degreeMatrix.getRowDimension());
+		for (int h = 0; h < degreeMatrix.getRowDimension(); h++) {
+			//ArrayList<Double> valHolder = degContainer(degreeMatrix, h);
+			for (int i = 0; i < X.getRowDimension(); i++) {
+				for (int j = 1; j < X.getColumnDimension(); j++) {
+					value *= Math.pow(X.get(i, j), degreeMatrix.get(h, j - 1));
+				}
+				polyX.set(i, h, value);
+				value = 1;
+			}
+		}
+		return polyX;
 	}
 	
 	public static void main(String[] args) {
@@ -176,13 +206,17 @@ public class Requioma2 {
 			Matrix X = r.load(inputFile);
 			double mean = r.mean(X, 1);
 			double sd = r.standardDev(X, 1);
-			X.print(1, 1);
+			//X.print(1, 1);
 			System.out.println("mean: " + mean);
 			System.out.println("sd: " + sd);
 			Matrix scaledX = r.scalefeatures(X);
-			scaledX.print(1, 1);
+			Matrix polyX = r.engineerPolynomials(scaledX, 1);
+			polyX.print(1, 1);
+			//scaledX.print(1, 1);
 			Matrix Y = r.loadY(inputFile);
-			Y.print(1, 1);
+			Matrix degreeMatrix = r.degreeMatrix(1);
+			//degreeMatrix.print(1, 1);
+			//Y.print(1, 1);
 			//System.out.println(X.get(0, 2));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
