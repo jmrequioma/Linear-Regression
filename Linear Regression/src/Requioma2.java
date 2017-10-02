@@ -8,6 +8,7 @@ import Jama.Matrix;
 public class Requioma2 {
 	int numRows;
 	int numCols;
+	int numFeatures;
 	private Matrix load(String filename) throws IOException {
 		int numRows = 0;
 		int numCols = 0;
@@ -61,6 +62,7 @@ public class Requioma2 {
 		}
 		this.numRows = numRows;
 		this.numCols = numCols;
+		numFeatures = numCols - 1;
 		return X;
 	}
 	
@@ -145,6 +147,26 @@ public class Requioma2 {
 		sd = sd / X.getRowDimension();
 		sd = Math.sqrt(sd);
 		return sd;
+	}
+	
+	private Matrix degreeMatrix(int degree) {
+		int ctr = 1;
+		int base = degree + 1;
+		Matrix dMatrix = new Matrix((int) Math.pow(base, numFeatures), numFeatures);
+		for (int j = numFeatures; j > 0; j--) {
+			for (int i = 0; i < (int) Math.pow(base, numFeatures); i++) {
+				//while (true) {
+					int inc = 0;
+					dMatrix.set(i, j, inc);
+					inc++;
+					if (inc == ctr) {
+						inc = 0;
+					}
+				//}
+			}
+			ctr = ctr * (degree + 1);
+		}
+		return dMatrix;
 	}
 	
 	public static void main(String[] args) {
