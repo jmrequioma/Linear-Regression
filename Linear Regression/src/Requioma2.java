@@ -158,7 +158,7 @@ public class Requioma2 {
 		Matrix dMatrix = new Matrix((int) Math.pow(base, numFeatures), numFeatures);
 		for (int j = numFeatures - 1; j >= 0; j--) {
 			for (int i = 0; i < (int) Math.pow(base, numFeatures); i++) {
-				System.out.println("ctr: " + ctr);
+				//System.out.println("ctr: " + ctr);
 				dMatrix.set(i, j, inc);
 				if (ctr2 == ctr) {
 					if (inc == degree) {
@@ -174,14 +174,6 @@ public class Requioma2 {
 		}
 		degMatrixRow = (int) (Math.pow(base, numFeatures));
 		return dMatrix;
-	}
-	
-	private ArrayList<Double> degContainer(Matrix degMatrix, int rowSeq) {
-		ArrayList<Double> valHolder = new ArrayList<Double>();
-		for (int i = 0; i < numFeatures - 1; i++) {
-			valHolder.add(degMatrix.get(rowSeq, i));
-		}
-		return valHolder;
 	}
 	
 	private Matrix engineerPolynomials(Matrix X,int degree) {
