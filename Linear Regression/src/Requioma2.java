@@ -203,21 +203,18 @@ public class Requioma2 {
 	
 	private Matrix regularizedCost(Matrix polyX, Matrix Y, Matrix theta, double lambda) {
 		double cost = 0;
-		double cost2 = 0;
 		Matrix prodMat = polyX.times(theta);
 		Matrix sigmoidMat = sigmoid(prodMat);
-		sigmoidMat.print(8, 8);
+		//sigmoidMat.print(8, 8);
 		Matrix regularizedCost = new Matrix(1, sigmoidMat.getColumnDimension());
 		for (int k = 0; k < sigmoidMat.getColumnDimension(); k++) {
 			for (int i = 0; i < sigmoidMat.getRowDimension(); i++) {
-				//for (int j = 0; j < sigmoidMat.getColumnDimension(); j++) {
 				Double check = Math.log((1 - sigmoidMat.get(i, k)));
 				if (check.isNaN() || check.isInfinite()) {
 					check = (double) 0;
 				}
-					cost += (Y.get(i, k) * Math.log(sigmoidMat.get(i, k))) + ((1 - Y.get(i, k)) * check);
-					//System.out.println("loop number " + k + ": " + cost);
-				//}
+				cost += (Y.get(i, k) * Math.log(sigmoidMat.get(i, k))) + ((1 - Y.get(i, k)) * check);
+				//System.out.println("loop number " + k + ": " + cost);
 			}
 			//System.out.println("k: " + k);
 			cost = cost / (-1 * sigmoidMat.getRowDimension());
@@ -230,7 +227,6 @@ public class Requioma2 {
 	}
 	
 	private Matrix secondHalf(Matrix theta, double lambda) {
-		double val = 0;
 		Matrix secondHalf = new Matrix(1, theta.getColumnDimension());
 		double cost = 0;
 		for (int k = 0; k < theta.getColumnDimension(); k++) {
@@ -245,7 +241,7 @@ public class Requioma2 {
 			secondHalf.set(0, k, cost);
 			cost = 0;
 		}
-		secondHalf.print(1, 1);
+		//secondHalf.print(1, 1);
 		return secondHalf;
 	}
 	
@@ -278,13 +274,14 @@ public class Requioma2 {
 			Matrix Y = r.loadY(inputFile);
 			Matrix degreeMatrix = r.degreeMatrix(1);
 			//degreeMatrix.print(1, 1);
-			Y.print(1, 1);
+			//Y.print(1, 1);
 			Matrix theta = new Matrix(r.degMatrixRow, Y.getColumnDimension());
 			for (int i = 0; i < theta.getRowDimension(); i++) {
 				for (int j = 0; j < theta.getColumnDimension(); j++) {
 					theta.set(i, j, 1);
 				}
 			}
+			System.out.println("Regularized Cost\n" + "----------------------------------");
 			Matrix prodMat = r.regularizedCost(polyX, Y, theta, 0.001);
 			//System.out.println(X.get(0, 2));
 			prodMat.print(8, 8);
