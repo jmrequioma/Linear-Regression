@@ -9,6 +9,7 @@ public class Requioma2 {
 	int numRows;
 	int numCols;
 	int numFeatures;
+	int degMatrixRow;
 	private Matrix load(String filename) throws IOException {
 		int numRows = 0;
 		int numCols = 0;
@@ -171,6 +172,7 @@ public class Requioma2 {
 			}
 			ctr = ctr * (degree + 1);
 		}
+		degMatrixRow = (int) (Math.pow(base, numFeatures));
 		return dMatrix;
 	}
 	
@@ -199,6 +201,66 @@ public class Requioma2 {
 		return polyX;
 	}
 	
+	private Matrix regularizedCost(Matrix polyX, Matrix Y, Matrix theta, double lambda) {
+		double cost = 0;
+		double cost2 = 0;
+		Matrix prodMat = polyX.times(theta);
+		Matrix sigmoidMat = sigmoid(prodMat);
+		sigmoidMat.print(8, 8);
+		Matrix regularizedCost = new Matrix(1, sigmoidMat.getColumnDimension());
+		for (int k = 0; k < sigmoidMat.getColumnDimension(); k++) {
+			for (int i = 0; i < sigmoidMat.getRowDimension(); i++) {
+				//for (int j = 0; j < sigmoidMat.getColumnDimension(); j++) {
+				Double check = Math.log((1 - sigmoidMat.get(i, k)));
+				if (check.isNaN() || check.isInfinite()) {
+					check = (double) 0;
+				}
+					cost += (Y.get(i, k) * Math.log(sigmoidMat.get(i, k))) + ((1 - Y.get(i, k)) * check);
+					//System.out.println("loop number " + k + ": " + cost);
+				//}
+			}
+			//System.out.println("k: " + k);
+			cost = cost / (-1 * sigmoidMat.getRowDimension());
+			//System.out.println("final1: " + cost);
+			regularizedCost.set(0, k, cost);
+			cost = 0;
+		}
+		Matrix finCost = regularizedCost.plus(secondHalf(theta, lambda));
+		return finCost;
+	}
+	
+	private Matrix secondHalf(Matrix theta, double lambda) {
+		double val = 0;
+		Matrix secondHalf = new Matrix(1, theta.getColumnDimension());
+		double cost = 0;
+		for (int k = 0; k < theta.getColumnDimension(); k++) {
+			for (int i = 0; i < theta.getRowDimension(); i++) {
+				//for (int j = 0; j < sigmoidMat.getColumnDimension(); j++) {
+					cost += Math.pow(theta.get(i, k), 2);
+					//System.out.println(cost);
+				//}
+			}
+			cost = (cost * lambda) / (2 * theta.getRowDimension());
+			//System.out.println("final: " + cost);
+			secondHalf.set(0, k, cost);
+			cost = 0;
+		}
+		secondHalf.print(1, 1);
+		return secondHalf;
+	}
+	
+	private Matrix sigmoid(Matrix prodMat) {
+		double value = 0;
+		Matrix sigmoidMat = new Matrix(prodMat.getRowDimension(), prodMat.getColumnDimension());
+		for (int i = 0; i < prodMat.getRowDimension(); i++) {
+			for (int j = 0; j < prodMat.getColumnDimension(); j++) {
+				value = 1 / (1 + Math.pow(Math.E, (prodMat.get(i, j) * -1)));
+				sigmoidMat.set(i, j, value);
+			}
+		}
+		return sigmoidMat;
+	}
+	
 	public static void main(String[] args) {
 		String inputFile = "irisflowers.csv";
 		Requioma2 r = new Requioma2();
@@ -211,13 +273,21 @@ public class Requioma2 {
 			System.out.println("sd: " + sd);
 			Matrix scaledX = r.scalefeatures(X);
 			Matrix polyX = r.engineerPolynomials(scaledX, 1);
-			polyX.print(8, 8);
+			//polyX.print(8, 8);
 			//scaledX.print(1, 1);
 			Matrix Y = r.loadY(inputFile);
 			Matrix degreeMatrix = r.degreeMatrix(1);
 			//degreeMatrix.print(1, 1);
-			//Y.print(1, 1);
+			Y.print(1, 1);
+			Matrix theta = new Matrix(r.degMatrixRow, Y.getColumnDimension());
+			for (int i = 0; i < theta.getRowDimension(); i++) {
+				for (int j = 0; j < theta.getColumnDimension(); j++) {
+					theta.set(i, j, 1);
+				}
+			}
+			Matrix prodMat = r.regularizedCost(polyX, Y, theta, 0.001);
 			//System.out.println(X.get(0, 2));
+			prodMat.print(8, 8);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
